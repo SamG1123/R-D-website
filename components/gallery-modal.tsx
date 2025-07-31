@@ -24,13 +24,13 @@ export function GalleryModal({ items, currentIndex, isOpen, onClose, onNext, onP
   const currentItem = items[currentIndex]
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-blue-800/90 z-50 flex items-center justify-center p-4">
       <div className="relative max-w-4xl w-full">
         {/* Close Button */}
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
+          className="absolute top-4 right-4 z-10 text-white hover:bg-white/20 font-bold"
           onClick={onClose}
         >
           <X className="h-6 w-6" />
@@ -66,15 +66,15 @@ export function GalleryModal({ items, currentIndex, isOpen, onClose, onNext, onP
           />
           <div className="p-6">
             <div className="flex items-center gap-2 mb-2">
-              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm font-medium">
+              <span className="bg-mustard-100 text-mustard-800 px-2 py-1 rounded-full text-sm font-bold">
                 {currentItem.category}
               </span>
-              <span className="text-gray-500 text-sm">
+              <span className="text-gray-500 text-sm font-medium">
                 {currentIndex + 1} of {items.length}
               </span>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-2">{currentItem.title}</h3>
-            <p className="text-gray-600">{currentItem.description}</p>
+            <h3 className="text-2xl font-bold text-blue-800 mb-2">{currentItem.title}</h3>
+            <p className="text-gray-600 font-medium">{currentItem.description}</p>
           </div>
         </div>
       </div>

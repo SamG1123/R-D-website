@@ -134,10 +134,10 @@ export function GalleryGrid() {
           <Button
             key={category}
             variant="outline"
-            className={`${
+            className={`font-bold ${
               selectedCategory === category
-                ? "border-orange-500 text-orange-500 bg-orange-50"
-                : "border-slate-300 text-slate-600 hover:bg-slate-100"
+                ? "border-mustard-600 text-mustard-600 bg-mustard-50"
+                : "border-gray-300 text-gray-600 hover:bg-gray-100"
             }`}
             onClick={() => setSelectedCategory(category)}
           >
@@ -151,7 +151,7 @@ export function GalleryGrid() {
         {filteredItems.map((item, index) => (
           <Card
             key={index}
-            className="group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
+            className="group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer bg-white"
             onClick={() => openModal(index)}
           >
             <div className="relative overflow-hidden">
@@ -160,13 +160,13 @@ export function GalleryGrid() {
                 alt={item.title}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-800/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <span className="inline-block bg-orange-500 px-2 py-1 rounded-full text-xs font-medium mb-2">
+                  <span className="inline-block bg-mustard-600 px-2 py-1 rounded-full text-xs font-bold mb-2">
                     {item.category}
                   </span>
                   <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-200 line-clamp-2">{item.description}</p>
+                  <p className="text-sm text-gray-200 line-clamp-2 font-medium">{item.description}</p>
                 </div>
               </div>
             </div>
