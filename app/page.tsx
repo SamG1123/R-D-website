@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Users, Lightbulb, Award, ChevronRight } from "lucide-react"
+import { ArrowRight, Users, Lightbulb, Award, ChevronRight, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -12,7 +12,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <BookOpen className="h-8 w-8 text-mustard-600" />
+              <img src="/logo.png" alt="College Logo" className="h-25 w-20 object-contain" />
               <div>
                 <h1 className="text-xl font-bold">College Name</h1>
                 <p className="text-sm text-gray-300">Research & Development</p>
@@ -448,7 +448,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <BookOpen className="h-6 w-6 text-mustard-600" />
+              <img src="/logo.png" alt="College Logo" className="h-6 w-6 object-contain" />
               <div>
                 <p className="font-bold">College Name - R&D</p>
                 <p className="text-sm font-medium">Advancing Knowledge Through Innovation</p>
