@@ -19,6 +19,21 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Oxygen",
+          "Ubuntu",
+          "Cantarell",
+          "Fira Sans",
+          "Droid Sans",
+          "Helvetica Neue",
+          "sans-serif",
+        ],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -53,30 +68,45 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom colors for the college theme
-        slate: {
-          50: "#f8fafc",
-          100: "#f1f5f9",
-          200: "#e2e8f0",
-          300: "#cbd5e1",
-          400: "#94a3b8",
-          500: "#64748b",
-          600: "#475569",
-          700: "#334155",
-          800: "#1e293b",
-          900: "#0f172a",
+        // Custom college colors - ONLY these 3 colors allowed
+        blue: {
+          DEFAULT: "#2E3192",
+          50: "#F0F1FB",
+          100: "#E1E3F7",
+          200: "#C3C7EF",
+          300: "#A5ABE7",
+          400: "#878FDF",
+          500: "#6973D7",
+          600: "#4B57CF",
+          700: "#3A44A8",
+          800: "#2E3192", // Main blue
+          900: "#232680",
         },
-        orange: {
-          50: "#fff7ed",
-          100: "#ffedd5",
-          200: "#fed7aa",
-          300: "#fdba74",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
-          800: "#9a3412",
-          900: "#7c2d12",
+        mustard: {
+          DEFAULT: "#FDB913",
+          50: "#FFF9E6",
+          100: "#FFF3CC",
+          200: "#FFE799",
+          300: "#FFDB66",
+          400: "#FFCF33",
+          500: "#FDC300",
+          600: "#FDB913", // Main mustard
+          700: "#E6A511",
+          800: "#CC920F",
+          900: "#B3800D",
+        },
+        // Override default colors to use only our 3 colors
+        gray: {
+          50: "#FFFFFF",
+          100: "#F8F9FA",
+          200: "#E9ECEF",
+          300: "#DEE2E6",
+          400: "#CED4DA",
+          500: "#ADB5BD",
+          600: "#6C757D",
+          700: "#495057",
+          800: "#343A40",
+          900: "#2E3192", // Use blue instead of gray
         },
       },
       borderRadius: {
