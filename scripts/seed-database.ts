@@ -1,5 +1,5 @@
 import { getDatabase } from "../lib/mongodb"
-import bcrypt from "bcryptjs"
+import 'dotenv/config'
 
 async function seedDatabase() {
   try {
@@ -16,8 +16,7 @@ async function seedDatabase() {
 
     console.log("Cleared existing data...")
 
-    // Seed Users
-    const hashedPassword = await bcrypt.hash("password123", 12)
+    // Seed Users with plain text passwords
     const users = [
       {
         firstName: "Admin",
@@ -25,9 +24,23 @@ async function seedDatabase() {
         usn: "ADM001",
         email: "admin@college.edu",
         phone: "+1-555-0001",
-        password: await bcrypt.hash("admin123", 12),
+        password: "admin123", // Plain text password
         role: "admin",
         department: "Administration",
+        status: "active",
+        joinDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        firstName: "Member",
+        lastName: "User",
+        usn: "MEM001",
+        email: "member@college.edu",
+        phone: "+1-555-0002",
+        password: "member123", // Plain text password
+        role: "member",
+        department: "Research",
         status: "active",
         joinDate: new Date(),
         createdAt: new Date(),
@@ -39,7 +52,7 @@ async function seedDatabase() {
         usn: "FAC001",
         email: "s.johnson@college.edu",
         phone: "+1-555-0101",
-        password: hashedPassword,
+        password: "password123",
         role: "member",
         department: "AI Research",
         status: "active",
@@ -53,7 +66,7 @@ async function seedDatabase() {
         usn: "FAC002",
         email: "m.chen@college.edu",
         phone: "+1-555-0102",
-        password: hashedPassword,
+        password: "password123",
         role: "member",
         department: "Biomedical Engineering",
         status: "active",
@@ -121,7 +134,7 @@ async function seedDatabase() {
         category: "Research Areas",
         tags: ["AI", "Machine Learning", "Neural Networks"],
         publishDate: new Date(),
-        createdBy: userResult.insertedIds[1],
+        createdBy: userResult.insertedIds[2],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -134,7 +147,7 @@ async function seedDatabase() {
         category: "Research Areas",
         tags: ["Sustainability", "Green Energy", "Environment"],
         publishDate: new Date(),
-        createdBy: userResult.insertedIds[1],
+        createdBy: userResult.insertedIds[2],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -148,7 +161,7 @@ async function seedDatabase() {
         category: "Publications",
         tags: ["Healthcare", "Machine Learning", "Medical"],
         publishDate: new Date("2024-01-15"),
-        createdBy: userResult.insertedIds[1],
+        createdBy: userResult.insertedIds[2],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -193,7 +206,7 @@ async function seedDatabase() {
         ],
         deliverables: ["Research paper publication", "Working prototype system", "Clinical validation report"],
         tags: ["AI", "Healthcare", "Machine Learning", "Medical Imaging"],
-        createdBy: userResult.insertedIds[1],
+        createdBy: userResult.insertedIds[2],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -217,7 +230,7 @@ async function seedDatabase() {
         ],
         deliverables: ["IoT sensor network", "Energy management dashboard", "Automation control system"],
         tags: ["IoT", "Smart Campus", "Energy", "Automation"],
-        createdBy: userResult.insertedIds[2],
+        createdBy: userResult.insertedIds[3],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -270,6 +283,12 @@ async function seedDatabase() {
     console.log(`Inserted ${galleryResult.insertedCount} gallery items`)
 
     console.log("Database seeded successfully!")
+    console.log("\n=== LOGIN CREDENTIALS ===")
+    console.log("Admin: admin@college.edu / admin123")
+    console.log("Member: member@college.edu / member123")
+    console.log("Sarah: s.johnson@college.edu / password123")
+    console.log("Michael: m.chen@college.edu / password123")
+    console.log("========================\n")
   } catch (error) {
     console.error("Error seeding database:", error)
   }

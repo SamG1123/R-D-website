@@ -8,13 +8,13 @@ export class ContentService {
     return db.collection<Content>("content")
   }
 
-  static async createContent(contentData: CreateContentInput, createdBy: string): Promise<Content> {
+  static async createContent(contentData: CreateContentInput): Promise<Content> {
     const collection = await this.getCollection()
 
     const newContent: Omit<Content, "_id"> = {
       ...contentData,
-      publishDate: contentData.status === "published" ? new Date() : undefined,
-      createdBy: new ObjectId(createdBy),
+      status: contentData.status || "draft",
+      publishDate: contentData.publishDate || new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -48,12 +48,13 @@ export class ContentService {
     if (filters?.category) query.category = filters.category
     if (filters?.author) query.author = filters.author
 
-    return await collection.find(query).sort({ createdAt: -1 }).toArray()
+    return await collection.find(query).sort({ publishDate: -1 }).toArray()
   }
 
   static async getPublishedContent(type?: string): Promise<Content[]> {
     const collection = await this.getCollection()
     const query: any = { status: "published" }
+
     if (type) query.type = type
 
     return await collection.find(query).sort({ publishDate: -1 }).toArray()
@@ -65,10 +66,10 @@ export class ContentService {
     const updateDoc = {
       ...updateData,
       updatedAt: new Date(),
-      ...(updateData.status === "published" && { publishDate: new Date() }),
     }
 
     await collection.updateOne({ _id: new ObjectId(id) }, { $set: updateDoc })
+
     return await collection.findOne({ _id: new ObjectId(id) })
   }
 
@@ -83,40 +84,29 @@ export class ContentService {
 
     return await collection
       .find({
-        $or: [
-          { title: { $regex: searchTerm, $options: "i" } },
-          { content: { $regex: searchTerm, $options: "i" } },
-          { category: { $regex: searchTerm, $options: "i" } },
-          { author: { $regex: searchTerm, $options: "i" } },
-          { tags: { $in: [new RegExp(searchTerm, "i")] } },
+        $and: [
+          { status: "published" },
+          {
+            $or: [
+              { title: { $regex: searchTerm, $options: "i" } },
+              { content: { $regex: searchTerm, $options: "i" } },
+              { author: { $regex: searchTerm, $options: "i" } },
+              { tags: { $in: [new RegExp(searchTerm, "i")] } },
+            ],
+          },
         ],
       })
-      .sort({ createdAt: -1 })
+      .sort({ publishDate: -1 })
       .toArray()
   }
 
-  static async getContentStats(): Promise<{
-    total: number
-    published: number
-    draft: number
-    byType: Record<string, number>
-  }> {
+  static async getContentByCategory(category: string): Promise<Content[]> {
     const collection = await this.getCollection()
+    return await collection.find({ category, status: "published" }).sort({ publishDate: -1 }).toArray()
+  }
 
-    const [total, published, draft, typeStats] = await Promise.all([
-      collection.countDocuments(),
-      collection.countDocuments({ status: "published" }),
-      collection.countDocuments({ status: "draft" }),
-      collection
-        .aggregate([{ $group: { _id: "$type", count: { $sum: 1 } } }, { $project: { type: "$_id", count: 1, _id: 0 } }])
-        .toArray(),
-    ])
-
-    const byType = typeStats.reduce((acc: Record<string, number>, item: any) => {
-      acc[item.type] = item.count
-      return acc
-    }, {})
-
-    return { total, published, draft, byType }
+  static async getContentByType(type: string): Promise<Content[]> {
+    const collection = await this.getCollection()
+    return await collection.find({ type, status: "published" }).sort({ publishDate: -1 }).toArray()
   }
 }

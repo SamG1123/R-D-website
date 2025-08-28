@@ -1,7 +1,6 @@
 import { getDatabase } from "../mongodb"
 import type { User, CreateUserInput, UpdateUserInput } from "../models/User"
 import { ObjectId } from "mongodb"
-import bcrypt from "bcryptjs"
 
 export class UserService {
   private static async getCollection() {
@@ -21,12 +20,9 @@ export class UserService {
       throw new Error("User with this email or USN already exists")
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 12)
-
     const newUser: Omit<User, "_id"> = {
       ...userData,
-      password: hashedPassword,
+      password: userData.password, // Store password as plain text
       status: "active",
       joinDate: new Date(),
       createdAt: new Date(),
@@ -96,8 +92,8 @@ export class UserService {
       return null
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    if (!isPasswordValid) {
+    // Direct password comparison (plain text)
+    if (password !== user.password) {
       return null
     }
 

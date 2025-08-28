@@ -8,12 +8,13 @@ export class GalleryService {
     return db.collection<GalleryItem>("gallery")
   }
 
-  static async createGalleryItem(itemData: CreateGalleryItemInput, uploadedBy: string): Promise<GalleryItem> {
+  static async createGalleryItem(itemData: CreateGalleryItemInput): Promise<GalleryItem> {
     const collection = await this.getCollection()
 
     const newItem: Omit<GalleryItem, "_id"> = {
       ...itemData,
-      uploadedBy: new ObjectId(uploadedBy),
+      status: itemData.status || "published",
+      tags: itemData.tags || [],
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -33,10 +34,7 @@ export class GalleryService {
     return await collection.findOne({ _id: new ObjectId(id) })
   }
 
-  static async getAllGalleryItems(filters?: {
-    category?: string
-    status?: string
-  }): Promise<GalleryItem[]> {
+  static async getAllGalleryItems(filters?: { category?: string; status?: string }): Promise<GalleryItem[]> {
     const collection = await this.getCollection()
     const query: any = {}
 
@@ -49,6 +47,7 @@ export class GalleryService {
   static async getPublishedGalleryItems(category?: string): Promise<GalleryItem[]> {
     const collection = await this.getCollection()
     const query: any = { status: "published" }
+
     if (category) query.category = category
 
     return await collection.find(query).sort({ createdAt: -1 }).toArray()
@@ -63,6 +62,7 @@ export class GalleryService {
     }
 
     await collection.updateOne({ _id: new ObjectId(id) }, { $set: updateDoc })
+
     return await collection.findOne({ _id: new ObjectId(id) })
   }
 
@@ -72,24 +72,30 @@ export class GalleryService {
     return result.deletedCount === 1
   }
 
+  static async getCategories(): Promise<string[]> {
+    const collection = await this.getCollection()
+    const categories = await collection.distinct("category", { status: "published" })
+    return categories.filter(Boolean)
+  }
+
   static async searchGalleryItems(searchTerm: string): Promise<GalleryItem[]> {
     const collection = await this.getCollection()
 
     return await collection
       .find({
-        $or: [
-          { title: { $regex: searchTerm, $options: "i" } },
-          { description: { $regex: searchTerm, $options: "i" } },
-          { category: { $regex: searchTerm, $options: "i" } },
-          { tags: { $in: [new RegExp(searchTerm, "i")] } },
+        $and: [
+          { status: "published" },
+          {
+            $or: [
+              { title: { $regex: searchTerm, $options: "i" } },
+              { description: { $regex: searchTerm, $options: "i" } },
+              { category: { $regex: searchTerm, $options: "i" } },
+              { tags: { $in: [new RegExp(searchTerm, "i")] } },
+            ],
+          },
         ],
       })
       .sort({ createdAt: -1 })
       .toArray()
-  }
-
-  static async getGalleryCategories(): Promise<string[]> {
-    const collection = await this.getCollection()
-    return await collection.distinct("category", { status: "published" })
   }
 }

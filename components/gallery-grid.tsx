@@ -1,144 +1,133 @@
 "use client"
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { GalleryModal } from "./gallery-modal"
-import {useApi} from "@/lib/hooks/useApi"
-import {Loader2} from "lucide-react"
 
 interface GalleryItem {
   _id: string
   title: string
   description: string
-
   category: string
   imageUrl: string
-  thumbnailUrl?: string
   status: string
   tags: string[]
-  createdAt: string
 }
-
 
 export function GalleryGrid() {
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [modalOpen, setModalOpen] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null)
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
 
-    // Fetch published gallery items
-  const { data: galleryData, loading: galleryLoading } = useApi<{ galleryItems: GalleryItem[] }>(
-    "/api/gallery?published=true",
-  )
+  useEffect(() => {
+    fetchGalleryData()
+  }, [])
 
-  // Fetch categories
-  const { data: categoriesData, loading: categoriesLoading } = useApi<{ categories: string[] }>(
-    "/api/gallery/categories",
-  )
+  const fetchGalleryData = async () => {
+    try {
+      setLoading(true)
 
-  const galleryItems = galleryData?.galleryItems || []
-  const dbCategories = categoriesData?.categories || []
-  const categories = ["All", ...dbCategories]
+      // Fetch gallery items
+      const itemsResponse = await fetch("/api/gallery?status=published")
+      const items = await itemsResponse.json()
+      setGalleryItems(items)
 
+      // Fetch categories
+      const categoriesResponse = await fetch("/api/gallery/categories")
+      const cats = await categoriesResponse.json()
+      setCategories(["All", ...cats])
+    } catch (error) {
+      console.error("Error fetching gallery data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const filteredItems =
+  const filteredImages =
     selectedCategory === "All" ? galleryItems : galleryItems.filter((item) => item.category === selectedCategory)
 
-  const openModal = (index: number) => {
-    setCurrentImageIndex(index)
-    setModalOpen(true)
-  }
-
-  const closeModal = () => {
-    setModalOpen(false)
-  }
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % filteredItems.length)
-  }
-
-  const previousImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length)
-  }
-
-  if (galleryLoading || categoriesLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-800" />
-      </div>
-    )
-  }
-
-  if (galleryItems.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">No gallery items available at the moment.</p>
+      <div className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-blue-800 mb-4">Research Gallery</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Loading gallery...</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <>
-      {/* Gallery Categories */}
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
-        {categories.map((category) => (
-          <Button
-            key={category}
-            variant="outline"
-            className={`font-bold ${
-              selectedCategory === category
-                ? "border-mustard-600 text-mustard-600 bg-mustard-50"
-                : "border-gray-300 text-gray-600 hover:bg-gray-100"
-            }`}
-            onClick={() => setSelectedCategory(category)}
-          >
-            {category}
-          </Button>
-        ))}
-      </div>
+    <div className="py-16 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-blue-800 mb-4">Research Gallery</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Explore our state-of-the-art facilities, research activities, and academic achievements
+          </p>
+        </div>
 
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredItems.map((item, index) => (
-          <Card
-            key = {item._id}
-            className="group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer bg-white"
-            onClick={() => openModal(index)}
-          >
-            <div className="relative overflow-hidden">
-              <img
-                src={item.thumbnailUrl || item.imageUrl || "/placeholder-image.png"}
-                alt={item.title}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-800/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <span className="inline-block bg-mustard-600 px-2 py-1 rounded-full text-xs font-bold mb-2">
+        {/* Category Filter */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          {categories.map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? "default" : "outline"}
+              onClick={() => setSelectedCategory(category)}
+              className={
+                selectedCategory === category
+                  ? "bg-blue-800 hover:bg-blue-700 text-white"
+                  : "border-blue-800 text-blue-800 hover:bg-blue-50"
+              }
+            >
+              {category}
+            </Button>
+          ))}
+        </div>
+
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredImages.map((item) => (
+            <div
+              key={item._id}
+              className="group cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              onClick={() => setSelectedImage(item)}
+            >
+              <div className="aspect-video bg-gray-200 overflow-hidden">
+                <img
+                  src={item.imageUrl || "/placeholder.svg"}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="font-semibold text-blue-800 mb-2 group-hover:text-blue-600 transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
+                <div className="mt-2">
+                  <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                     {item.category}
                   </span>
-                  <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-200 line-clamp-2 font-medium">{item.description}</p>
                 </div>
               </div>
             </div>
-          </Card>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Gallery Modal */}
-      <GalleryModal
-        items={filteredItems.map((item) => ({
-          image: item.imageUrl,
-          title: item.title,
-          category: item.category,
-          description: item.description,
-        }))}
-        currentIndex={currentImageIndex}
-        isOpen={modalOpen}
-        onClose={closeModal}
-        onNext={nextImage}
-        onPrevious={previousImage}
-      />
-    </>
+        {filteredImages.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No images found in this category.</p>
+          </div>
+        )}
+
+        {/* Gallery Modal */}
+        <GalleryModal image={selectedImage} isOpen={!!selectedImage} onClose={() => setSelectedImage(null)} />
+      </div>
+    </div>
   )
 }

@@ -1,10 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Users, Loader2 } from "lucide-react"
-import { useApi } from "@/lib/hooks/useApi"
+import { ChevronLeft, ChevronRight, Mail, Award, BookOpen } from "lucide-react"
 
 interface TeamMember {
   _id: string
@@ -13,176 +11,183 @@ interface TeamMember {
   specialization: string
   email: string
   bio: string
-  profileImage?: string
   status: string
+  publications: string[]
+  achievements: string[]
 }
 
 export function TeamCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const [itemsPerView, setItemsPerView] = useState(3)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Fetch active team members
-  const { data: teamData, loading } = useApi<{ teamMembers: TeamMember[] }>("/api/team?active=true")
-  const teamMembers = teamData?.teamMembers || []
-
-  // Responsive items per view
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setItemsPerView(1)
-      } else if (window.innerWidth < 1024) {
-        setItemsPerView(2)
-      } else {
-        setItemsPerView(3)
-      }
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
+    fetchTeamMembers()
   }, [])
 
-  // Auto-rotation
-  useEffect(() => {
-    if (!isAutoPlaying || teamMembers.length === 0) return
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % Math.ceil(teamMembers.length / itemsPerView))
-    }, 4000)
-
-    return () => clearInterval(interval)
-  }, [isAutoPlaying, itemsPerView, teamMembers.length])
+  const fetchTeamMembers = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("/api/team?status=active")
+      const members = await response.json()
+      setTeamMembers(members)
+    } catch (error) {
+      console.error("Error fetching team members:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % Math.ceil(teamMembers.length / itemsPerView))
-    setIsAutoPlaying(false)
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % teamMembers.length)
   }
 
   const prevSlide = () => {
-    setCurrentIndex(
-      (prev) =>
-        (prev - 1 + Math.ceil(teamMembers.length / itemsPerView)) % Math.ceil(teamMembers.length / itemsPerView),
-    )
-    setIsAutoPlaying(false)
-  }
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index)
-    setIsAutoPlaying(false)
-  }
-
-  const getCurrentMembers = () => {
-    const startIndex = currentIndex * itemsPerView
-    return teamMembers.slice(startIndex, startIndex + itemsPerView)
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + teamMembers.length) % teamMembers.length)
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-800" />
+      <div className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-blue-800 mb-4">Our Research Team</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Loading team members...</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (teamMembers.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">No team members available at the moment.</p>
+      <div className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-blue-800 mb-4">Our Research Team</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">No team members found.</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="relative">
-      {/* Carousel Container */}
-      <div className="overflow-hidden">
-        <div className="flex transition-transform duration-500 ease-in-out">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            {getCurrentMembers().map((member) => (
-              <Card
-                key={member._id}
-                className="text-center hover:shadow-xl transition-all duration-300 bg-white transform hover:-translate-y-1"
-              >
-                <CardContent className="pt-6">
-                  <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    {member.profileImage ? (
-                      <img
-                        src={member.profileImage || "/placeholder.svg"}
-                        alt={member.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Users className="h-12 w-12 text-gray-400" />
-                    )}
+    <div className="py-16 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-blue-800 mb-4">Our Research Team</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Meet our dedicated researchers and faculty members driving innovation and discovery
+          </p>
+        </div>
+
+        <div className="relative max-w-4xl mx-auto">
+          {/* Team Member Card */}
+          <div className="bg-gray-50 rounded-lg p-8 shadow-lg">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              {/* Profile Image Placeholder */}
+              <div className="flex justify-center">
+                <div className="w-48 h-48 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="text-4xl font-bold text-blue-800">
+                    {teamMembers[currentIndex].name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
                   </div>
-                  <h3 className="font-bold text-blue-800 mb-1 text-lg">{member.name}</h3>
-                  <p className="text-mustard-600 font-bold text-sm mb-2">{member.role}</p>
-                  <p className="text-gray-600 text-sm font-medium mb-3">{member.specialization}</p>
-                  {member.bio && (
-                    <p className="text-gray-500 text-xs leading-relaxed mb-3 line-clamp-3">{member.bio}</p>
-                  )}
-                  {member.email && (
-                    <a
-                      href={`mailto:${member.email}`}
-                      className="text-blue-800 hover:text-mustard-600 text-xs font-medium transition-colors"
-                    >
-                      {member.email}
-                    </a>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </div>
+
+              {/* Member Info */}
+              <div className="text-center md:text-left">
+                <h3 className="text-2xl font-bold text-blue-800 mb-2">{teamMembers[currentIndex].name}</h3>
+                <p className="text-mustard-600 font-semibold mb-2">{teamMembers[currentIndex].role}</p>
+                <p className="text-gray-600 mb-4">
+                  <strong>Specialization:</strong> {teamMembers[currentIndex].specialization}
+                </p>
+                <p className="text-gray-700 mb-6 leading-relaxed">{teamMembers[currentIndex].bio}</p>
+
+                {/* Contact */}
+                <div className="flex items-center justify-center md:justify-start mb-4">
+                  <Mail className="h-4 w-4 text-blue-800 mr-2" />
+                  <a
+                    href={`mailto:${teamMembers[currentIndex].email}`}
+                    className="text-blue-800 hover:text-blue-600 transition-colors"
+                  >
+                    {teamMembers[currentIndex].email}
+                  </a>
+                </div>
+
+                {/* Publications */}
+                {teamMembers[currentIndex].publications.length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-center md:justify-start mb-2">
+                      <BookOpen className="h-4 w-4 text-blue-800 mr-2" />
+                      <span className="font-semibold text-blue-800">Recent Publications:</span>
+                    </div>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      {teamMembers[currentIndex].publications.slice(0, 3).map((pub, index) => (
+                        <li key={index}>• {pub}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Achievements */}
+                {teamMembers[currentIndex].achievements.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-center md:justify-start mb-2">
+                      <Award className="h-4 w-4 text-mustard-600 mr-2" />
+                      <span className="font-semibold text-blue-800">Achievements:</span>
+                    </div>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      {teamMembers[currentIndex].achievements.slice(0, 2).map((achievement, index) => (
+                        <li key={index}>• {achievement}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* Navigation Buttons */}
+          {teamMembers.length > 1 && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 border-blue-800 text-blue-800"
+                onClick={prevSlide}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 border-blue-800 text-blue-800"
+                onClick={nextSlide}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+
+          {/* Dots Indicator */}
+          {teamMembers.length > 1 && (
+            <div className="flex justify-center mt-6 space-x-2">
+              {teamMembers.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentIndex ? "bg-blue-800" : "bg-gray-300"
+                  }`}
+                  onClick={() => setCurrentIndex(index)}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-
-      {/* Navigation Arrows */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white hover:bg-gray-100 shadow-lg border text-blue-800 hover:text-mustard-600"
-        onClick={prevSlide}
-        disabled={teamMembers.length <= itemsPerView}
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </Button>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white hover:bg-gray-100 shadow-lg border text-blue-800 hover:text-mustard-600"
-        onClick={nextSlide}
-        disabled={teamMembers.length <= itemsPerView}
-      >
-        <ChevronRight className="h-6 w-6" />
-      </Button>
-
-      {/* Dots Indicator */}
-      {Math.ceil(teamMembers.length / itemsPerView) > 1 && (
-        <div className="flex justify-center mt-8 space-x-2">
-          {Array.from({ length: Math.ceil(teamMembers.length / itemsPerView) }).map((_, index) => (
-            <button
-              key={index}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentIndex ? "bg-mustard-600" : "bg-gray-300 hover:bg-gray-400"
-              }`}
-              onClick={() => goToSlide(index)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Auto-play Toggle */}
-      <div className="flex justify-center mt-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-gray-600 hover:text-blue-800 font-medium"
-          onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-        >
-          {isAutoPlaying ? "Pause Auto-rotation" : "Resume Auto-rotation"}
-        </Button>
       </div>
     </div>
   )

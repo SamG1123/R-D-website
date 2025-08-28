@@ -144,17 +144,6 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
               <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">{error}</div>
             )}
 
-            {/* Demo Credentials */}
-            <div className="bg-gray-50 p-3 rounded-md text-xs text-gray-600">
-              <p className="font-medium mb-1">Demo Credentials:</p>
-              <p>
-                <strong>Member:</strong> member@college.edu / member123
-              </p>
-              <p>
-                <strong>Admin:</strong> admin@college.edu / admin123
-              </p>
-            </div>
-
             {/* Submit Button */}
             <Button
               type="submit"
