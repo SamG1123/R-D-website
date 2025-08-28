@@ -3,80 +3,28 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Users } from "lucide-react"
+import { ChevronLeft, ChevronRight, Users, Loader2 } from "lucide-react"
+import { useApi } from "@/lib/hooks/useApi"
 
 interface TeamMember {
+  _id: string
   name: string
   role: string
   specialization: string
-  image?: string
-  email?: string
-  bio?: string
+  email: string
+  bio: string
+  profileImage?: string
+  status: string
 }
-
-const teamMembers: TeamMember[] = [
-  {
-    name: "Dr. Sarah Johnson",
-    role: "Director of R&D",
-    specialization: "Artificial Intelligence",
-    email: "s.johnson@college.edu",
-    bio: "Leading AI research with 15+ years of experience in machine learning and neural networks.",
-  },
-  {
-    name: "Dr. Michael Chen",
-    role: "Senior Research Scientist",
-    specialization: "Biomedical Engineering",
-    email: "m.chen@college.edu",
-    bio: "Expert in medical device development and tissue engineering with 20+ publications.",
-  },
-  {
-    name: "Dr. Emily Rodriguez",
-    role: "Principal Investigator",
-    specialization: "Sustainable Technology",
-    email: "e.rodriguez@college.edu",
-    bio: "Pioneering research in renewable energy systems and environmental sustainability.",
-  },
-  {
-    name: "Dr. David Kim",
-    role: "Research Professor",
-    specialization: "Data Science",
-    email: "d.kim@college.edu",
-    bio: "Specializing in big data analytics and predictive modeling for complex systems.",
-  },
-  {
-    name: "Dr. Lisa Wang",
-    role: "Associate Research Director",
-    specialization: "Quantum Computing",
-    email: "l.wang@college.edu",
-    bio: "Leading quantum algorithm development and quantum information processing research.",
-  },
-  {
-    name: "Dr. James Thompson",
-    role: "Senior Researcher",
-    specialization: "Cybersecurity",
-    email: "j.thompson@college.edu",
-    bio: "Expert in cryptography and digital security with focus on blockchain technologies.",
-  },
-  {
-    name: "Dr. Maria Garcia",
-    role: "Research Scientist",
-    specialization: "Materials Science",
-    email: "m.garcia@college.edu",
-    bio: "Developing advanced nanomaterials and conducting cutting-edge materials characterization.",
-  },
-  {
-    name: "Dr. Robert Lee",
-    role: "Principal Researcher",
-    specialization: "Robotics & Automation",
-    email: "r.lee@college.edu",
-    bio: "Advancing autonomous systems and human-robot interaction technologies.",
-  },
-]
 
 export function TeamCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [itemsPerView, setItemsPerView] = useState(3)
+
+  // Fetch active team members
+  const { data: teamData, loading } = useApi<{ teamMembers: TeamMember[] }>("/api/team?active=true")
+  const teamMembers = teamData?.teamMembers || []
 
   // Responsive items per view
   useEffect(() => {
@@ -97,14 +45,14 @@ export function TeamCarousel() {
 
   // Auto-rotation
   useEffect(() => {
-    if (!isAutoPlaying) return
+    if (!isAutoPlaying || teamMembers.length === 0) return
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % Math.ceil(teamMembers.length / itemsPerView))
     }, 4000)
 
     return () => clearInterval(interval)
-  }, [isAutoPlaying, itemsPerView])
+  }, [isAutoPlaying, itemsPerView, teamMembers.length])
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % Math.ceil(teamMembers.length / itemsPerView))
@@ -129,22 +77,38 @@ export function TeamCarousel() {
     return teamMembers.slice(startIndex, startIndex + itemsPerView)
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-800" />
+      </div>
+    )
+  }
+
+  if (teamMembers.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">No team members available at the moment.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="relative">
       {/* Carousel Container */}
       <div className="overflow-hidden">
         <div className="flex transition-transform duration-500 ease-in-out">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            {getCurrentMembers().map((member, index) => (
+            {getCurrentMembers().map((member) => (
               <Card
-                key={`${currentIndex}-${index}`}
+                key={member._id}
                 className="text-center hover:shadow-xl transition-all duration-300 bg-white transform hover:-translate-y-1"
               >
                 <CardContent className="pt-6">
                   <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    {member.image ? (
+                    {member.profileImage ? (
                       <img
-                        src={member.image || "/placeholder.svg"}
+                        src={member.profileImage || "/placeholder.svg"}
                         alt={member.name}
                         className="w-full h-full object-cover"
                       />

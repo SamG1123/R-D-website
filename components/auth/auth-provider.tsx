@@ -13,6 +13,8 @@ interface AuthContextType {
   login: (email: string, password: string, userType: "admin" | "member") => Promise<boolean>
   logout: () => void
   isLoading: boolean
+  showAdminDashboard: boolean
+  setShowAdminDashboard: (show: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -44,6 +46,7 @@ const DEMO_USERS = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false)
 
   useEffect(() => {
     // Check for stored user session
@@ -73,6 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(userData)
       localStorage.setItem("rd-user", JSON.stringify(userData))
+
+      // Auto-show admin dashboard for admin users
+      if (userType === "admin") {
+        setShowAdminDashboard(true)
+      }
+
       return true
     }
 
@@ -81,10 +90,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null)
+    setShowAdminDashboard(false)
     localStorage.removeItem("rd-user")
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isLoading,
+        showAdminDashboard,
+        setShowAdminDashboard,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {
