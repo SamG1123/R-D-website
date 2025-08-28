@@ -2,9 +2,9 @@
 
 import {useState} from "react"
 
-import { ArrowRight, Users, Lightbulb, Award, ChevronRight, BookOpen, LogIn } from "lucide-react"
+import { ArrowRight, Users, Award, ChevronRight, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DynamicContentSections } from "@/components/dynamic-content-sections"
 import Link from "next/link"
 import ProjectsSection from '@/components/projects-section';
 import { GalleryGrid } from "@/components/gallery-grid"
@@ -13,11 +13,18 @@ import { TeamCarousel } from "@/components/team-carousel"
 import { LoginModal } from "@/components/auth/login-modal"
 import { UserMenu } from "@/components/auth/user-menu"
 import { AuthProvider, useAuth } from "@/components/auth/auth-provider"
-
+import { AdminDashboard } from "@/components/admin/admin-dashboard"
 
 function HomePage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const { user, login, logout } = useAuth()
+  const { showAdminDashboard, setShowAdminDashboard } = useAuth()
+
+  // If admin clicked "Admin Dashboard", replace page with admin panel
+  if (user?.type === "admin" && showAdminDashboard) {
+    return <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+  }
+
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* Header */}
@@ -27,7 +34,7 @@ function HomePage() {
             <div className="flex items-center space-x-2">
               <img src="/logo.png" alt="College Logo" className="h-25 w-20 object-contain" />
               <div>
-                <h1 className="text-xl font-bold">College Name</h1>
+                <h1 className="text-xl font-bold">Nitte Meenakshi Institute of Technology</h1>
                 <p className="text-sm text-gray-300">Research & Development</p>
               </div>
             </div>
@@ -58,7 +65,18 @@ function HomePage() {
 
             {/* Authentication Section */}
               {user ? (
-                <UserMenu user={user} onLogout={logout} />
+                <div className="flex items-center space-x-4">
+                  {user.type === "admin" && (
+                    <Button
+                      variant="ghost"
+                      className="text-white hover:text-mustard-600 hover:bg-white/10 font-medium"
+                      onClick={() => setShowAdminDashboard(true)}
+                    >
+                      Admin Dashboard
+                    </Button>
+                  )}
+                  <UserMenu user={user} onLogout={logout} />
+                </div>
               ) : (
                 <Button
                   variant="ghost"
@@ -130,6 +148,27 @@ function HomePage() {
       )}
 
       {/* Hero Section */}
+      <div className="mt-8">
+  {user?.type === "admin" && (
+    <div className="flex justify-center gap-4">
+      <button
+        onClick={() => setShowAdminDashboard(true)}
+        className="bg-white text-blue-800 hover:bg-gray-100 font-bold px-5 py-2 rounded-lg"
+      >
+        Admin Dashboard
+      </button>
+      <button className="bg-white text-blue-800 hover:bg-gray-100 font-bold px-5 py-2 rounded-lg">
+        User Management
+      </button>
+    </div>
+  )}
+  {user?.type === "member" && (
+    <button className="bg-white text-blue-800 hover:bg-gray-100 font-bold px-5 py-2 rounded-lg">
+      My Research
+    </button>
+  )}
+</div>
+
       <section className="bg-gradient-to-r from-blue-800 to-blue-700 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold mb-6">
@@ -155,217 +194,8 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Research Areas */}
-      <section id="research" className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-blue-800 mb-4">Research Areas</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto font-medium">
-              Our multidisciplinary approach spans across various fields of study, driving innovation and discovery in
-              key areas of research.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Artificial Intelligence",
-                description: "Machine learning, neural networks, and AI applications in various domains.",
-                icon: <Lightbulb className="h-8 w-8 text-mustard-600" />,
-              },
-              {
-                title: "Sustainable Technology",
-                description: "Green energy solutions, environmental monitoring, and sustainable development.",
-                icon: <BookOpen className="h-8 w-8 text-mustard-600" />,
-              },
-              {
-                title: "Biomedical Engineering",
-                description: "Medical devices, biotechnology, and healthcare innovation research.",
-                icon: <Users className="h-8 w-8 text-mustard-600" />,
-              },
-              {
-                title: "Data Science",
-                description: "Big data analytics, statistical modeling, and predictive systems.",
-                icon: <Award className="h-8 w-8 text-mustard-600" />,
-              },
-              {
-                title: "Cybersecurity",
-                description: "Information security, cryptography, and digital privacy protection.",
-                icon: <Lightbulb className="h-8 w-8 text-mustard-600" />,
-              },
-              {
-                title: "Materials Science",
-                description: "Advanced materials, nanotechnology, and material characterization.",
-                icon: <BookOpen className="h-8 w-8 text-mustard-600" />,
-              },
-            ].map((area, index) => (
-              <Card key={index} className="hover:shadow-xl transition-shadow border-l-4 border-l-mustard-600 bg-white">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    {area.icon}
-                    <CardTitle className="text-blue-800 font-bold">{area.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-gray-600 font-medium">{area.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Current Projects */}
-
-      {/*
-      <section id="projects" className="py-16 bg-gray-100">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-blue-800 mb-4">Current Projects</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto font-medium">
-              Discover our ongoing research projects that are shaping the future and addressing real-world challenges.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                title: "Smart Campus Initiative",
-                status: "In Progress",
-                description: "Developing IoT solutions for energy management and campus automation.",
-                progress: 75,
-                team: "Dr. Smith, Dr. Johnson, 8 Graduate Students",
-              },
-              {
-                title: "AI-Powered Healthcare Diagnostics",
-                status: "Phase 2",
-                description: "Machine learning models for early disease detection and diagnosis.",
-                progress: 60,
-                team: "Dr. Williams, Dr. Brown, 6 Researchers",
-              },
-              {
-                title: "Renewable Energy Storage",
-                status: "Testing",
-                description: "Advanced battery technologies for sustainable energy storage solutions.",
-                progress: 85,
-                team: "Dr. Davis, Dr. Miller, 4 PhD Candidates",
-              },
-              {
-                title: "Quantum Computing Research",
-                status: "Early Stage",
-                description: "Exploring quantum algorithms and their practical applications.",
-                progress: 30,
-                team: "Dr. Wilson, Dr. Taylor, 5 Graduate Students",
-              },
-            ].map((project, index) => (
-              <Card key={index} className="hover:shadow-xl transition-shadow bg-white">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-blue-800 font-bold">{project.title}</CardTitle>
-                    <span className="bg-mustard-100 text-mustard-800 px-2 py-1 rounded-full text-sm font-bold">
-                      {project.status}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-gray-600 mb-4 font-medium">{project.description}</CardDescription>
-                  <div className="mb-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600 font-medium">Progress</span>
-                      <span className="text-blue-800 font-bold">{project.progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-mustard-600 h-2 rounded-full" style={{ width: `${project.progress}%` }}></div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 font-medium">
-                    <strong className="text-blue-800">Team:</strong> {project.team}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-      */}
-      <ProjectsSection />
-
-      {/* Publications & Achievements */}
-      <section id="publications" className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-blue-800 mb-4">Recent Publications & Achievements</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto font-medium">
-              Our research contributions to the academic community and industry recognition.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-l-4 border-l-mustard-600 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg text-blue-800 font-bold">Recent Publications</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="border-b pb-2">
-                    <p className="font-bold text-sm text-blue-800">Machine Learning in Healthcare</p>
-                    <p className="text-xs text-gray-600 font-medium">Nature Medicine, 2024</p>
-                  </div>
-                  <div className="border-b pb-2">
-                    <p className="font-bold text-sm text-blue-800">Sustainable Energy Systems</p>
-                    <p className="text-xs text-gray-600 font-medium">IEEE Transactions, 2024</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-blue-800">Quantum Computing Applications</p>
-                    <p className="text-xs text-gray-600 font-medium">Science Journal, 2023</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-mustard-600 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg text-blue-800 font-bold">Awards & Recognition</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="border-b pb-2">
-                    <p className="font-bold text-sm text-blue-800">Excellence in Research Award</p>
-                    <p className="text-xs text-gray-600 font-medium">National Science Foundation</p>
-                  </div>
-                  <div className="border-b pb-2">
-                    <p className="font-bold text-sm text-blue-800">Innovation Grant</p>
-                    <p className="text-xs text-gray-600 font-medium">Department of Energy</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-blue-800">Best Paper Award</p>
-                    <p className="text-xs text-gray-600 font-medium">International Conference</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-mustard-600 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg text-blue-800 font-bold">Research Impact</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-mustard-600">150+</div>
-                    <div className="text-sm text-gray-600 font-medium">Publications</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-mustard-600">25</div>
-                    <div className="text-sm text-gray-600 font-medium">Active Projects</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-mustard-600">$2.5M</div>
-                    <div className="text-sm text-gray-600 font-medium">Research Funding</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      {/*Dynamic Content Sections */}
+      <DynamicContentSections />
 
       {/* Team Section */}
       <section id="team" className="py-16 bg-gray-100">

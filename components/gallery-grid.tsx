@@ -4,107 +4,42 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { GalleryModal } from "./gallery-modal"
+import {useApi} from "@/lib/hooks/useApi"
+import {Loader2} from "lucide-react"
 
 interface GalleryItem {
-  image: string
+  _id: string
   title: string
-  category: string
   description: string
+
+  category: string
+  imageUrl: string
+  thumbnailUrl?: string
+  status: string
+  tags: string[]
+  createdAt: string
 }
 
-const galleryItems: GalleryItem[] = [
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "AI Research Laboratory",
-    category: "Laboratories",
-    description:
-      "State-of-the-art computing facility equipped with high-performance GPUs and specialized hardware for artificial intelligence research, machine learning model training, and neural network development.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Biomedical Engineering Lab",
-    category: "Laboratories",
-    description:
-      "Advanced biomedical research facility featuring cutting-edge equipment for medical device development, tissue engineering, and biocompatibility testing.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Research Team Collaboration",
-    category: "Research Activities",
-    description:
-      "Interdisciplinary team of researchers, faculty, and graduate students collaborating on breakthrough sustainable energy solutions and environmental technologies.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Annual Research Symposium",
-    category: "Events",
-    description:
-      "Our flagship annual event where researchers present their latest findings, breakthrough discoveries, and innovative solutions to the broader academic community.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Innovation Award Ceremony",
-    category: "Awards",
-    description:
-      "Recognition ceremony celebrating excellence in research and development, honoring outstanding contributions to scientific advancement and technological innovation.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Quantum Computing Setup",
-    category: "Laboratories",
-    description:
-      "Cutting-edge quantum research infrastructure including quantum processors, cryogenic systems, and specialized measurement equipment for quantum algorithm development.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Student Research Presentation",
-    category: "Research Activities",
-    description:
-      "Graduate students and PhD candidates presenting their research findings, thesis work, and innovative solutions at our monthly research showcase.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "International Conference",
-    category: "Events",
-    description:
-      "Hosting distinguished researchers, scientists, and academics from around the world for knowledge exchange and collaborative research discussions.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Clean Energy Lab",
-    category: "Laboratories",
-    description:
-      "Renewable energy research and testing facility focusing on solar cell development, wind energy optimization, and energy storage solutions.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Data Science Workshop",
-    category: "Research Activities",
-    description:
-      "Hands-on workshop sessions where researchers learn advanced data analysis techniques, machine learning algorithms, and statistical modeling methods.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Industry Partnership Meeting",
-    category: "Events",
-    description:
-      "Collaborative meetings with industry partners to discuss technology transfer, commercialization opportunities, and real-world applications of research.",
-  },
-  {
-    image: "/placeholder.svg?height=300&width=400",
-    title: "Materials Science Lab",
-    category: "Laboratories",
-    description:
-      "Advanced materials characterization facility with electron microscopes, X-ray diffraction equipment, and nanomaterial synthesis capabilities.",
-  },
-]
 
 export function GalleryGrid() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [modalOpen, setModalOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  const categories = ["All", "Laboratories", "Research Activities", "Events", "Awards"]
+    // Fetch published gallery items
+  const { data: galleryData, loading: galleryLoading } = useApi<{ galleryItems: GalleryItem[] }>(
+    "/api/gallery?published=true",
+  )
+
+  // Fetch categories
+  const { data: categoriesData, loading: categoriesLoading } = useApi<{ categories: string[] }>(
+    "/api/gallery/categories",
+  )
+
+  const galleryItems = galleryData?.galleryItems || []
+  const dbCategories = categoriesData?.categories || []
+  const categories = ["All", ...dbCategories]
+
 
   const filteredItems =
     selectedCategory === "All" ? galleryItems : galleryItems.filter((item) => item.category === selectedCategory)
@@ -124,6 +59,22 @@ export function GalleryGrid() {
 
   const previousImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length)
+  }
+
+  if (galleryLoading || categoriesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-800" />
+      </div>
+    )
+  }
+
+  if (galleryItems.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">No gallery items available at the moment.</p>
+      </div>
+    )
   }
 
   return (
@@ -150,13 +101,13 @@ export function GalleryGrid() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map((item, index) => (
           <Card
-            key={index}
+            key = {item._id}
             className="group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer bg-white"
             onClick={() => openModal(index)}
           >
             <div className="relative overflow-hidden">
               <img
-                src={item.image || "/placeholder.svg"}
+                src={item.thumbnailUrl || item.imageUrl || "/placeholder-image.png"}
                 alt={item.title}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -176,7 +127,12 @@ export function GalleryGrid() {
 
       {/* Gallery Modal */}
       <GalleryModal
-        items={filteredItems}
+        items={filteredItems.map((item) => ({
+          image: item.imageUrl,
+          title: item.title,
+          category: item.category,
+          description: item.description,
+        }))}
         currentIndex={currentImageIndex}
         isOpen={modalOpen}
         onClose={closeModal}
